@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  vault-consul:
+    build:
+      context: .
+    image: shrish/vault-consul:0.1
+    ports:
+      - 8200:8200
+    container_name: vault_consul
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    command: server -config=/vault/config/vault-config.json
+    cap_add:
+      - IPC_LOCK
+    depends_on:
+      - consul
+
+  consul:
+    build:
+      context: .
+      dockerfile: Dockerfile.consul
+    image: shrish/consul:0.1
+    container_name: my_consul
+    ports:
+      - 8500:8500
+    command: agent -server -bind 0.0.0.0 -client 0.0.0.0 -bootstrap-expect 1 -config-file=/consul/config/config.json
+
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_PASSWORD=adminpw
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=db
+    ports:
+      - 5432:5432
